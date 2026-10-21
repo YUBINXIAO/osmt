@@ -49,6 +49,22 @@ osmt stale openai/codex --days 60
 osmt release-notes openai/codex --commits 50 --output notes.md
 ```
 
+### Example output (triage)
+
+Running `osmt triage openai/codex --limit 5` produces a priority-sorted table you can immediately act on or paste into an AI coding session:
+
+```
+Triage: openai/codex (top 5)
+┌─────┬──────┬─────────┬──────────┬───────┬───────────────────────────────────────────────┐
+│   # │ Type │ Age      │ Comments │ Score │ Title                              │
+├─────┼──────┼─────────┼──────────┼───────┼───────────────────────────────────────────────┤
+│  87 │ PR   │ 12 days  │        5 │    39 │ Fix stale detection for draft PRs │
+│ 142 │ Issue│ 45 days  │       12 │   126 │ Add support for monorepo detection│
+└─────┴──────┴─────────┴──────────┴───────┴───────────────────────────────────────────────┘
+```
+
+Higher scores surface items that have been open longer and have more discussion — the ones that usually need attention first.
+
 ### Using a GitHub token (recommended)
 
 Create a classic personal access token with `public_repo` scope and export it:
@@ -82,7 +98,7 @@ ruff check src tests
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 If you are an open-source maintainer using this tool and have ideas for reducing maintainer burden further, please open an issue. This project is intentionally small so that suggestions can be implemented quickly.
 
