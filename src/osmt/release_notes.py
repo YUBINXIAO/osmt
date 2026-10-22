@@ -8,11 +8,28 @@ from typing import Any
 
 from .utils import github_get
 
-
 CONVENTIONAL_RE = re.compile(
     r"^(?P<type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\((?P<scope>[^)]+)\))?(?P<breaking>!)?: (?P<subject>.+)$",
     re.IGNORECASE,
 )
+# Conventional Commits requires this footer token to be uppercase.
+BREAKING_FOOTER_RE = re.compile(
+    r"^(?:BREAKING CHANGE|BREAKING-CHANGE):",
+    re.MULTILINE,
+)
+# Whole word, plus simple inflections (add/adds/added/adding). "address" does not match.
+_KEYWORD_SUFFIX = r"(?:ing|es|ed|s)?"
+
+
+def _keyword_re(*words: str) -> re.Pattern[str]:
+    stems = "|".join(re.escape(word) for word in sorted(words, key=len, reverse=True))
+    return re.compile(rf"\b(?:{stems}){_KEYWORD_SUFFIX}\b")
+
+
+_FIX_KEYWORDS = _keyword_re("fix", "bug", "hotfix")
+_FEAT_KEYWORDS = _keyword_re("feat", "feature", "add", "new")
+_DOCS_KEYWORDS = _keyword_re("doc", "document", "documentation", "readme", "typo")
+_REFACTOR_KEYWORDS = _keyword_re("refactor", "clean", "cleanup", "simplify")
 
 
 def fetch_commits(owner: str, repo: str, limit: int = 50) -> list[dict]:
@@ -29,18 +46,18 @@ def classify_commit(message: str) -> tuple[str, str]:
     if match:
         ctype = match.group("type").lower()
         subject = match.group("subject").strip()
-        if match.group("breaking"):
+        if match.group("breaking") or BREAKING_FOOTER_RE.search(message):
             ctype = "breaking"
         return ctype, subject
-    # Fallback heuristics
+    # Fallback heuristics: whole words only, so "address" is not "add".
     lower = first_line.lower()
-    if any(k in lower for k in ("fix", "bug", "hotfix")):
+    if _FIX_KEYWORDS.search(lower):
         return "fix", first_line
-    if any(k in lower for k in ("feat", "feature", "add", "new")):
+    if _FEAT_KEYWORDS.search(lower):
         return "feat", first_line
-    if any(k in lower for k in ("doc", "readme", "typo")):
+    if _DOCS_KEYWORDS.search(lower):
         return "docs", first_line
-    if any(k in lower for k in ("refactor", "clean", "simplify")):
+    if _REFACTOR_KEYWORDS.search(lower):
         return "refactor", first_line
     return "other", first_line
 
