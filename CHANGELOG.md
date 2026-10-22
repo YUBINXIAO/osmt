@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example triage output in README
 - CODE_OF_CONDUCT.md
 
+### Fixed
+- Release notes treat `BREAKING CHANGE` / `BREAKING-CHANGE` footers as breaking changes, and match free-form commit keywords as whole words
+
 ## [0.1.0] - 2026-10-21
 
 ### Added
